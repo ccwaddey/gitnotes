@@ -74,7 +74,6 @@ book: https://github.com/progit/progit2/releases/download/2.1.338/progit.pdf
 * Git branching
 ** Basic branching
    Create a new branch based off the current branch head with "git
-
    branch <branchname>", or create a new branch and switch to it
    immediately with "git checkout -b <newbranch>" or "git switch -c
    <newbranch>".
@@ -86,7 +85,7 @@ book: https://github.com/progit/progit2/releases/download/2.1.338/progit.pdf
    -".
 
    Create a branch starting at an arbitrary commit with "git branch
-   <commit_hash>".
+   <branchname> <commit_hash>".
 
    To merge changes from another branch into the current branch, run
    "git merge <otherbranch>".
