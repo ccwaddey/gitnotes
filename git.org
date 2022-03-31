@@ -1,4 +1,6 @@
 [[https://github.com/ccwaddey/gitnotes]]
+"git clone https://github.com/ccwaddey/gitnotes.git"
+book: https://github.com/progit/progit2/releases/download/2.1.338/progit.pdf
 
 * Starting out
 ** Starting a new project
