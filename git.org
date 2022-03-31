@@ -1,0 +1,313 @@
+
+
+* Starting out
+** Starting a new project
+   Run "git init" to start using git in a directory. "git init <dir>"
+   will create <dir>. You can use this in an empty directory or one
+   that already has source code/whatever in it.
+
+   Run "git clone <git-url/lastpath.git>" to copy the source code for a project (as
+   well as its history) into a new directory lastpath. Use "git clone
+   <git-url> <mydir>" to have it put in <mydir> instead. There may or
+   may not be a .git at the end.
+
+** Basic configuration
+   You should also run "git config --global user.name 'Your Name'" and
+   "git config --global user.email your_email@example.com". It is also
+   helpful to run "git config --global core.editor <fav_editor>".
+
+
+* Basic git commands
+** Basic workflow
+   The basic workflow is: modify files, save them; "git add" those
+   files; and "git commit".
+*** git add
+    Run "git add <filename>" to tell git to track a <filename> or add
+    the changes in <filename> to the next commit. If you modify the file
+    again afterward, you'll have to add the file again to add the
+    changes to the next commit.
+*** Staging area or index
+    The set of changed files that will be added to your next commit (as
+    well as all unchanged files from the last commit) is called the
+    index (or staging area).
+*** git commit
+    Run "git commit" to save a snapshot of everything in the index. If
+    you find adding files to the index to be a pain, just modify every
+    file you want to have in the next commit and run "git commit -a" to
+    add every modified file to the index and commit all in one go. This
+    only commits the files that are already tracked.
+*** git status
+    Run "git status" to see what has been modified but not added to the
+    index, what has been added to the index but not committed, and what
+    branch you are on.
+*** .gitignore
+    Create a file called .gitignore with the names of files that you
+    don't want git to mention as untracked, or run "git config
+    status.showUntrackedFiles no" to have git ignore all files not
+    already tracked.
+
+** Removing and renaming files
+   Also, to remove a file from the working directory and from being
+   tracked by git in the future (past commits will still have it), run
+   "git rm <filename>". To stop tracking a file but not remove it from
+   the working directory, run "git rm --cached <filename>".
+
+   To change the name of a file in a way that git will know about it,
+   run "git mv <oldname> <newname>".
+
+   Then commit.
+
+** Aliases
+   As a convenience, you can create shortcuts or aliases to abbreviate
+   long commands. If you want the abbreviation to apply to all your
+   projects on the current machine, run "git commit --global
+   alias.<short_name> <alias definition>". As an example, I have "git
+   config --global alias.cmt commit" and "git config --global alias.lt
+   log --oneline --decorate --graph --all".
+
+   To have the alias apply only for a certain project, leave off the
+   "--global" part.
+
+
+* Git branching
+** Basic branching
+   Create a new branch based off the current branch head with "git
+
+   branch <branchname>", or create a new branch and switch to it
+   immediately with "git checkout -b <newbranch>" or "git switch -c
+   <newbranch>".
+
+   List branches with "git branch".
+
+   Switch to an already existing branch with "git checkout <branch>" or
+   "git switch <branch>". Switch to the last branch with "git switch
+   -".
+
+   Create a branch starting at an arbitrary commit with "git branch
+   <commit_hash>".
+
+   To merge changes from another branch into the current branch, run
+   "git merge <otherbranch>".
+
+   If you have changed things in the current branch that were also
+   changed in the other branch, you will get a merge conflict. Git will
+   tell you which files this happened in and annotate the conflict with
+   <<<<<<<, =======, and >>>>>>> (seven <'s or >'s).
+
+   To resolve the conflict, remove the <,=, and > lines and choose
+   which lines from each branch that you want to keep. Then save the
+   file, add it to the index (if necessary) and commit.
+
+** git stash
+   Git won't let you switch branches if you have changed anything
+   since your last commit. If you don't want to do a new commit just
+   to switch branches, run "git stash". This will save all of your
+   changes to the index and working tree, and it will restore both to
+   match the last commit. When you are done working on the other
+   branch, run "git stash pop" (after switching back to the original
+   branch) to get your work back.
+
+   "git stash list" shows all the stashes you have. "git stash" is a
+   shorthand for "git stash push", which puts a new stash at the
+   beginning of the stash list. "git stash pop" applies the first
+   stash to the current branch, and removes it from the list. You can
+   apply stashes to different branches or out of order with "git stash
+   apply <number>" and then remove them from the list with "git stash
+   drop <number>".
+
+   "git stash show <number>" will show the diff that would be applied
+   for that stash number from "git stash list". By default it shows
+   the diffstat, but "git config --global stash.showPatch yes" will
+   give you the actual diff.
+
+   Note that stashes create dangling commit objects after they have
+   been popped/dropped, so run "git fsck" after a while to see what
+   dangling commits you have (if any aren't from stashes (they'll
+   begin with "WIP"), create a branch for them) and run "git gc" or
+   "git prune" (but probably the first). See [[*Recovery]].
+
+** git reflog
+   This shows the history of what commits you had checked out (you'll
+   see "HEAD" mentioned a lot here; "HEAD" holds whatever branch you
+   are currently on; the reflog simply stores a history of where HEAD
+   was). We'll see more about how this is useful in [[*Recovery]].
+
+
+* Searching and Finding and Viewing
+** git log
+   To view project history, use "git log". My most used options for
+   this command are "git log --oneline --decorate --graph --all". This
+   shows every commit visible from every branch in an abbreviated
+   format (with the branch heads "decorating" the commit they are on),
+   and a nice little ASCII graph that shows the branch and merge
+   history.
+
+   If you need to see the full diff of what was introduced in a commit,
+   you can do "git show <commit>" or "git log -p <commit> -1".
+
+   To show only those commits that introduce or change <string>, run
+   "git log -S <string>".
+  
+   To show changes made to a function, run "git log -L
+   :<function_name>:<filename>".
+
+** git grep
+   This is like regular grep in a lot of ways, but has some
+   git-specific functionality. You can search for strings in tracked
+   files in the working tree with just "git grep <string>". To search
+   the index instead, just do "git grep --cached <string>".
+
+   Note that <string> is actually a basic regular expression by
+   default. You can make it use fixed strings with "-F", extended
+   regualar expressions with "-E", and perl regex with "-P".
+
+   To see the function that a pattern is contained in, use "git grep -p
+   <search_string>".
+
+   To search in a different commit, append its hash. To only search
+   within files matching a shell wildcard, append them to everything
+   else with "-- <file_names>" (the "--" signals the end of all
+   non-file_name options).
+
+   As an example, "git grep -p quirky_var ffa37e -- '*.c'" searches
+   for every instance of quirky_var (showing us the function it's in
+   too) in the commit with hash beginning with ffa37e in files ending
+   in .c (the single-quotes in the original command are there to
+   show you that git's version of grep can handle the wildcards
+   instead of having the shell do it).
+
+** git diff
+   To view the difference between the working tree and the staging
+   area/index (what is about to be committed), run "git diff".
+
+   To view the difference between the working tree and an arbitrary
+   commit, use "git diff <commit>".
+
+   To view the difference between the staging area and a commit, use
+   "git diff [--cached|--staged] <commit>" (--cached and --staged are
+   synonymous). If you leave out <commit>, git will use HEAD.
+
+   Use "git diff <commit1> <commit2>" to view the difference between
+   arbitrary commits.
+
+
+* Remotes
+** Starting out
+   If you just want to look at other people's source code, you can
+   ignore this section.
+
+   Otherwise, you will presumably have a github account to which you want to
+   push, but github doesn't allow passwords anymore, so I recommend
+   using ssh keys.
+
+   Open a terminal on your local machine (or git bash on windows). Run
+   "ls -al ~/.ssh", and if you see id_ecdsa.pub or id_ed25519.pub,
+   then skip the next step.
+
+   In a terminal or git bash, run "ssh-keygen -t ed25519". Skip this
+   if you already have a good key as determined above. You can hit
+   enter for the defaults, but I do recommend picking a strong
+   password. This will create a strong public/private keypair in the
+   .ssh directory in your home folder.
+
+   Then just go to your github account, and under Settings -> SSH and
+   GPG keys, click New SSH Key and paste the file ending in .pub
+   there. DON'T PASTE THE PRIVATE KEY!
+
+   There's more you can do to here, specifically with starting
+   ssh-agent so you don't have to enter your password all the time,
+   but I'll just point you to the docs for that.
+
+** Basic Remotes
+   Show your remotes with "git remote" or "git remote -v". Add a
+   remote for a project with "git remote add <shortname> <url>".
+
+   Get the updates to a code base (all branches) with "git fetch
+   <shortname>". This will simply download all of the code to your
+   local machine. Run "git merge <shortname>/<branch>" to merge a
+   branch from a remote into the current local branch.
+
+   This last bit on "git fetch" and "git merge" needs the following
+   config lines in your .git/config file to work properly (they are
+   normally there, but its just good to know):
+
+   [remote "origin"]
+        url = git@github.com:<username>/<repository>.git
+        fetch = +refs/heads/*:refs/remotes/origin/*
+
+   (The url may be something more like https://github.com/... if
+   you're using https instead of git@github.com:... when using SSH.)
+
+   To update the remote with your local source code, run "git push
+   <shortname> <branch>". If you haven't merged the most recent
+   version of <branch> from <shortname> into your work (because
+   someone else has pushed since you last did so), then you'll have to
+   do so before you can push.
+
+   Rename a remote with "git remote rename <oldname>
+   <newname>". Remove a remote with "git remote rm <shortname>".
+
+** Remote branching
+   It's easier to describe the workflow than to cover everything.
+
+   So suppose you have a remote called "origin" that you have cloned
+   from or otherwise added. You're on your master branch in your local
+   repository, and you run "git fetch origin". This will update the
+   origin/master branch to reflect what it is on the server. You can
+   merge it into your master branch whenever you want. 
+
+   If someone else pushes to origin's master branch in the meantime,
+   the server's master branch will be updated, but your origin/master
+   branch will not be updated until you run git fetch again.
+
+   After running "git merge origin/master" if necessary, you can run
+   "git push origin master" to update any changes you have made to the
+   server.
+
+   Also note that any branches you create locally will NOT be
+   automatically uploaded to the server. You have to explicitly push a
+   branch to a remote for that remote to get it.
+
+   Also note that if someone else pushes a branch that you don't have
+   yet, you don't automatically get a local version of the branch that
+   you can edit. You can run "git checkout -b <newbranch>
+   origin/<newbranch>" to get one that also tracks the remote one by
+   default. What that means essentially is "git status" when you are
+   on that branch will tell you if you are ahead of or behind the
+   remote branch; and you can run "git pull" and "git push" with that
+   branch checked out and git will automatically know what to do.
+
+   If you already have a local branch that you want to set up to track
+   a remote branch, do "git branch -u <remote>/<remote_branch>" with
+   that branch checked out.
+   
+
+* Recovery
+  If you're only using the commands that we've talked about so far,
+  you can't truly lose any data unless you're disk crashes and you
+  haven't been pushing to a remote.
+
+  But sometimes you do something wrong, and you want to go back to a
+  previous version of the source code. Say you want master to point to
+  commit b03e.... If that is all you want (i.e., you don't care about
+  the index or working tree), then, while on master, run "git reset
+  --soft b03e". You're index will remain what it was before you did
+  the reset, which if you're working directory was clean, was the same
+  as the last commit you did on master; otherwise its whatever you
+  added. If you want the index to match the commit you are switching
+  to as well, run "git reset b03e" (i.e., forget the --soft). If you
+  want to make the working directory match the commit as well, then
+  run "git reset --hard b03e". Just make sure you have stashed or
+  committed your working tree changes, because otherwise they will be
+  lost.
+
+  Note that you should really run "git branch oldmaster" or something
+  like that before running "git reset..." so that you still can
+  reference those old commits. If you forget to do that, you can check
+  your reflog with "git reflog" to see what commit you were on before
+  you reset. The reflog only keeps stuff around for so long though. If
+  you need to find commits that aren't reachable from a branch, run
+  "git fsck --full".
+
+* Conclusion
+  That's all folks.
